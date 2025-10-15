@@ -1,9 +1,12 @@
+import 'package:app/consts/app_const.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GoogleService {
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
   bool _isGoogleSignInInitialized = false;
   static final Logger _logger = Logger();
   static final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
@@ -16,7 +19,6 @@ class GoogleService {
       _logger.e('Falló la inicialización de la clase de google: $e');
     }
   }
-
 
   Future<void> _ensureInit() async {
     if (!_isGoogleSignInInitialized) {
@@ -39,11 +41,12 @@ class GoogleService {
       GoogleSignInAuthentication auth = account.authentication;
       String idToken = auth.idToken ?? '';
       if (idToken.isNotEmpty) {
+        await _storage.write(key: AppConst.idTokenLabel, value: idToken);
+
         SharedPreferences.getInstance().then((current) {
-          current.setString("idToken", idToken);
-          current.setString("email", account.email);
-          current.setString("name", account.displayName ?? '');
-          current.setString("photoUrl", account.photoUrl ?? '');
+          current.setString(AppConst.emailLabel, account.email);
+          current.setString(AppConst.nameLabel, account.displayName ?? '');
+          current.setString(AppConst.photoUrlLabel, account.photoUrl ?? '');
         });
         ok = true;
       }
@@ -54,13 +57,26 @@ class GoogleService {
     return ok;
   }
 
+  Future<String> getToken() async {
+    return await _storage.read(key: AppConst.idTokenLabel) ?? '';
+  }
+
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     SharedPreferences.getInstance().then((current) {
-      current.setString("idToken", '');
-      current.setString("email", '');
-      current.setString("name", '');
-      current.setString("photoUrl", '');
+      current.setString(AppConst.emailLabel, '');
+      current.setString(AppConst.nameLabel, '');
+      current.setString(AppConst.photoUrlLabel, '');
+
+      current.remove(AppConst.emailLabel);
+      current.remove(AppConst.nameLabel);
+      current.remove(AppConst.photoUrlLabel);
+
+      current.clear();
     });
+
+    await _storage.write(key: AppConst.idTokenLabel, value: '');
+    await _storage.delete(key: AppConst.idTokenLabel);
+    await _storage.deleteAll();
   }
 }

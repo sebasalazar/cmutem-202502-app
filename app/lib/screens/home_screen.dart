@@ -1,3 +1,6 @@
+import 'package:app/consts/app_const.dart';
+import 'package:app/model/weather_data.dart';
+import 'package:app/services/rest_service.dart';
 import 'package:app/services/storage_service.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +17,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             UserAccountsDrawerHeader(
               accountName: FutureBuilder<String>(
-                future: StorageService.getValue('name'),
+                future: StorageService.getValue(AppConst.nameLabel),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     return Text(snapshot.data ?? '');
@@ -26,7 +29,7 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
               accountEmail: FutureBuilder<String>(
-                future: StorageService.getValue('email'),
+                future: StorageService.getValue(AppConst.emailLabel),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     return Text(snapshot.data ?? '');
@@ -40,7 +43,7 @@ class HomeScreen extends StatelessWidget {
               currentAccountPicture: CircleAvatar(
                 child: ClipOval(
                   child: FutureBuilder(
-                    future: StorageService.getValue('photoUrl'),
+                    future: StorageService.getValue(AppConst.photoUrlLabel),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.done) {
                         String url = snapshot.data ?? '';
@@ -60,6 +63,25 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+      body: Center(
+        child: FutureBuilder(
+          future: RestService.getWeather('SCEL'),
+          builder: (context, snapshot) {
+            if (ConnectionState.done == snapshot.connectionState) {
+              WeatherData? data = snapshot.data;
+              if (data == null) {
+                return const Text('ERROR');
+              } else {
+                return Text("La temperatura actual es ${data.temperature}");
+              }
+            } else if (snapshot.hasError) {
+              return const Text('ERROR');
+            } else {
+              return const CircularProgressIndicator();
+            }
+          },
         ),
       ),
     );
