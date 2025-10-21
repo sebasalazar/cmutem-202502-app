@@ -34,7 +34,7 @@ class RestService {
       final int httpCode = response.statusCode ?? 400;
       if (httpCode >= 200 && httpCode < 300) {
         String json = response.data ?? '';
-        if (json.isEmpty) {
+        if (json.isNotEmpty) {
           WeatherInfo info = WeatherInfo.fromRawJson(json);
           data = info.data;
         }
