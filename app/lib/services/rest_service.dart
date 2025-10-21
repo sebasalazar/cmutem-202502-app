@@ -8,7 +8,7 @@ class RestService {
   static final Logger _logger = Logger();
 
   static const String _jsonMime = "application/json";
-  static const String _baseUrl = "https://api.boostr.cl";
+  static const String _baseUrl = "https://api.sebastian.cl";
 
   static Future<WeatherData?> getWeather(String station) async {
     WeatherData? data;
@@ -27,7 +27,7 @@ class RestService {
         );
       }
 
-      final String url = "$_baseUrl/weather/$station.json";
+      final String url = "$_baseUrl/$station.json";
       final Map<String, String> headers = {"accept": _jsonMime};
 
       final Response<String> response = await _client.get(url, options: Options(headers: headers));
