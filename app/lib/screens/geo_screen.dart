@@ -3,9 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:logger/logger.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class GeoScreenState extends State<GeoScreen> {
+  static final Logger _logger = Logger();
+
   Future<LatLng> _currentPosition() async {
+    PermissionStatus locationWhenInUse = await Permission.locationWhenInUse
+        .request();
+    _logger.i("Permiso: ${locationWhenInUse.name}");
+
     bool isServiceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!isServiceEnabled) {
       return Future.error('El GPS está deshabilitado');
